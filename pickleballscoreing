@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pickleball Score Tracker with Leaderboard</title>
+    <style>
+        /* Existing styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 30px auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        form {
+            margin-bottom: 30px;
+        }
+        form div {
+            margin-bottom: 15px;
+        }
+        form label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        form input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        #matches {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        #matches th, #matches td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        #matches th {
+            background-color: #f4f4f4;
+        }
+        /* Tab styles */
+        .tab {
+            overflow: hidden;
+            background-color: #f1f1f1;
+            margin-bottom: 20px;
+        }
+        .tab button {
+            background-color: inherit;
+            float: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            transition: 0.3s;
+            font-size: 17px;
+        }
+        .tab button:hover {
+            background-color: #ddd;
+        }
+        .tab button.active {
+            background-color: #ccc;
+        }
+        .tabcontent {
+            display: none;
+        }
+        .tabcontent.active {
+            display: block;
+        }
+        /* Leaderboard styles */
+        .leaderboard table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .leaderboard th, .leaderboard td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        .leaderboard th {
+            background-color: #f4f4f4;
+        }
+        /* Reset button styles */
+        .reset-button {
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .reset-button:hover {
+            background-color: #e60000;
+        }
+        @media (max-width: 600px) {
+            form div {
+                display: block;
+            }
+            .tab button {
+                float: none;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pickleball Score Tracker</h1>
+
+        <!-- Tabs -->
+        <div class="tab">
+            <button class="tablinks active" onclick="openTab(event, 'Tracker')">Score Tracker</button>
+            <button class="tablinks" onclick="openTab(event, 'Leaderboard')">Leaderboard</button>
+        </div>
+
+        <!-- Score Tracker Tab -->
+        <div id="Tracker" class="tabcontent active">
+            <form id="scoreForm">
+                <h2>Enter Match Details</h2>
+                <div>
+                    <label for="date">Date</label>
+                    <input type="date" id="date" required>
+                </div>
+                <div>
+                    <label for="player1">Player 1 Name</label>
+                    <input type="text" id="player1" required>
+                </div>
+                <div>
+                    <label for="player2">Player 2 Name</label>
+                    <input type="text" id="player2" required>
+                </div>
+                <div>
+                    <label for="score1">Player 1 Score</label>
+                    <input type="number" id="score1" min="0" required>
+                </div>
+                <div>
+                    <label for="score2">Player 2 Score</label>
+                    <input type="number" id="score2" min="0" required>
+                </div>
+                <button type="submit">Add Match</button>
+            </form>
+
+            <h2>Match History</h2>
+            <table id="matches">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Player 1</th>
+                        <th>Player 2</th>
+                        <th>Score</th>
+                        <th>Winner</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Matches will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Leaderboard Tab -->
+        <div id="Leaderboard" class="tabcontent">
+            <h2>Leaderboard</h2>
+            <div class="leaderboard">
+                <table id="leaderboardTable">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Player</th>
+                            <th>Rating</th>
+                            <th>Wins</th>
+                            <th>Losses</th>
+                            <th>Matches</th>
+                            <th>Win %</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Leaderboard data will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Reset Data Button -->
+        <button id="resetButton" class="reset-button">Reset Data</button>
+
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Tab functionality
+        function openTab(evt, tabName) {
+            const tabcontent = document.getElementsByClassName('tabcontent');
+            const tablinks = document.getElementsByClassName('tablinks');
+
+            for (let i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = 'none';
+                tabcontent[i].classList.remove('active');
+            }
+
+            for (let i = 0; i < tablinks.length; i++) {
+                tablinks[i].classList.remove('active');
+            }
+
+            document.getElementById(tabName).style.display = 'block';
+            document.getElementById(tabName).classList.add('active');
+            evt.currentTarget.classList.add('active');
+        }
+
+        const form = document.getElementById('scoreForm');
+        const matchesTable = document.getElementById('matches').getElementsByTagName('tbody')[0];
+        const leaderboardTable = document.getElementById('leaderboardTable').getElementsByTagName('tbody')[0];
+
+        let matches = JSON.parse(localStorage.getItem('matches')) || [];
+        let playerStats = JSON.parse(localStorage.getItem('playerStats')) || {};
+
+        const DEFAULT_RATING = 1500;
+        const K_FACTOR = 32;
+
+        function updateTable() {
+            matchesTable.innerHTML = '';
+            matches.forEach(match => {
+                const row = matchesTable.insertRow();
+                row.insertCell(0).textContent = match.date;
+                row.insertCell(1).textContent = match.player1;
+                row.insertCell(2).textContent = match.player2;
+                row.insertCell(3).textContent = `${match.score1}-${match.score2}`;
+                row.insertCell(4).textContent = match.winner;
+            });
+            updatePlayerStats();
+            updateLeaderboard();
+        }
+
+        function updatePlayerStats() {
+            // Reset player stats
+            playerStats = {};
+
+            matches.forEach(match => {
+                const { player1, player2, winner } = match;
+
+                // Initialize player stats if not present
+                [player1, player2].forEach(player => {
+                    if (!playerStats[player]) {
+                        playerStats[player] = {
+                            wins: 0,
+                            losses: 0,
+                            matches: 0,
+                            rating: DEFAULT_RATING
+                        };
+                    }
+                });
+
+                // Update match counts
+                playerStats[player1].matches += 1;
+                playerStats[player2].matches += 1;
+
+                // Update wins and losses
+                if (winner === player1) {
+                    playerStats[player1].wins += 1;
+                    playerStats[player2].losses += 1;
+                } else if (winner === player2) {
+                    playerStats[player2].wins += 1;
+                    playerStats[player1].losses += 1;
+                }
+
+                // Update ratings
+                updateRatings(match);
+            });
+
+            // Save player stats to localStorage
+            localStorage.setItem('playerStats', JSON.stringify(playerStats));
+        }
+
+        function updateRatings(match) {
+            const { player1, player2, winner } = match;
+
+            const rating1 = playerStats[player1].rating;
+            const rating2 = playerStats[player2].rating;
+
+            // Expected scores
+            const expectedScore1 = 1 / (1 + Math.pow(10, (rating2 - rating1) / 400));
+            const expectedScore2 = 1 / (1 + Math.pow(10, (rating1 - rating2) / 400));
+
+            // Actual scores
+            let score1, score2;
+            if (winner === player1) {
+                score1 = 1;
+                score2 = 0;
+            } else if (winner === player2) {
+                score1 = 0;
+                score2 = 1;
+            } else {
+                // Draw scenario
+                score1 = 0.5;
+                score2 = 0.5;
+            }
+
+            // Update ratings
+            playerStats[player1].rating += K_FACTOR * (score1 - expectedScore1);
+            playerStats[player2].rating += K_FACTOR * (score2 - expectedScore2);
+        }
+
+        function updateLeaderboard() {
+            // Convert playerStats object to an array
+            const playersArray = Object.keys(playerStats).map(player => {
+                const stats = playerStats[player];
+                const winPercent = stats.matches > 0 ? ((stats.wins / stats.matches) * 100).toFixed(1) + '%' : '0%';
+                return {
+                    player,
+                    rating: Math.round(stats.rating),
+                    wins: stats.wins,
+                    losses: stats.losses,
+                    matches: stats.matches,
+                    winPercent
+                };
+            });
+
+            // Sort players by rating in descending order
+            playersArray.sort((a, b) => b.rating - a.rating);
+
+            // Display leaderboard
+            leaderboardTable.innerHTML = '';
+            playersArray.forEach((playerData, index) => {
+                const row = leaderboardTable.insertRow();
+                row.insertCell(0).textContent = index + 1; // Rank
+                row.insertCell(1).textContent = playerData.player;
+                row.insertCell(2).textContent = playerData.rating;
+                row.insertCell(3).textContent = playerData.wins;
+                row.insertCell(4).textContent = playerData.losses;
+                row.insertCell(5).textContent = playerData.matches;
+                row.insertCell(6).textContent = playerData.winPercent;
+            });
+        }
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const date = document.getElementById('date').value;
+            const player1 = document.getElementById('player1').value.trim();
+            const player2 = document.getElementById('player2').value.trim();
+            const score1 = parseInt(document.getElementById('score1').value, 10);
+            const score2 = parseInt(document.getElementById('score2').value, 10);
+
+            if (player1 === player2) {
+                alert('Player names must be different.');
+                return;
+            }
+
+            let winner = '';
+            if (score1 > score2) {
+                winner = player1;
+            } else if (score2 > score1) {
+                winner = player2;
+            } else {
+                winner = 'Draw';
+            }
+
+            const match = { date, player1, player2, score1, score2, winner };
+            matches.push(match);
+            localStorage.setItem('matches', JSON.stringify(matches));
+            updateTable();
+            form.reset();
+        });
+
+        window.addEventListener('load', updateTable);
+
+        // Reset Data Functionality
+        const resetButton = document.getElementById('resetButton');
+
+        resetButton.addEventListener('click', function() {
+            const userInput = prompt('Are you sure you want to clear data? If so, type "DELETE DATA"');
+
+            if (userInput === 'DELETE DATA') {
+                // Clear localStorage data
+                localStorage.removeItem('matches');
+                localStorage.removeItem('playerStats');
+
+                // Reset application state
+                matches = [];
+                playerStats = {};
+
+                // Update the UI
+                updateTable();
+                alert('All data has been cleared.');
+            } else {
+                alert('Data reset cancelled.');
+            }
+        });
+    </script>
+</body>
+</html>
